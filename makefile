@@ -8,7 +8,7 @@ SHELL = /bin/bash
 
 CONFIG_FILE ?= "config.yaml"
 CODEBUILD_SRC_DIR := $(shell pwd)
-AWS_REGION := $(shell yq ".AWS_REGION" $(CONFIG_FILE))
+AWS_REGION := $(shell yq -r ".AWS_REGION" $(CONFIG_FILE))
 AWS_SSCSERVER := $(shell yq ".SSC_AWS_SERVER" $(CONFIG_FILE))
 ACCELROLE := $(shell yq ".Parameters.AcceleratorRole" $(CONFIG_FILE))
 ACCOUNT_ID := $(shell aws sts get-caller-identity --query Account --output text)
@@ -150,7 +150,7 @@ deploy-config-aggregator:
 		--capabilities CAPABILITY_NAMED_IAM \
 		--disable-rollback
 
-deploy-stack:
+deploy-stack-test:
 	$(info --- Deploying Stack ---)
 	@{ \
 		rootStackUrl="$(AWS_SSCSERVER)/api?orgid=$(ORGANIZATION_ID)&generateyaml=false" ; \
@@ -176,6 +176,20 @@ deploy-stack:
 		exit $$status; \
 	}
 
+deploy-stack:
+	$(info --- Deploying Stack ---)
+	@{ \
+		UUID=$$(uuidgen) ; \
+		aws cloudformation deploy \
+			--template-file ./arch/templates/build/root.yaml \
+			--stack-name "$(STACK)-$(ENV_NAME)" \
+			--parameter-overrides $(shell $(PARAMETERS_STRING)) "PipelineBucket"="$(PIPELINE_BUCKET)"  "InvokeUpdate"="$$UUID" "DeployVersion"="$(DEPLOY_VERSION)" \
+			--s3-bucket $(PIPELINE_BUCKET) \
+			--capabilities CAPABILITY_NAMED_IAM \
+			--disable-rollback; \
+		status=$$?; \
+		exit $$status; \
+	}
 ss1:
 	$(info --- Updating StackSet #1 ---)
 	@echo "Updating: GC01CheckAttestationLetter, GC02CheckAccountManagementPlan"
