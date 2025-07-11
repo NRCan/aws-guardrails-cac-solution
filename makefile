@@ -20,7 +20,7 @@ GIT_VERSION := $(shell yq ".GitSourceVersion" ./$(CONFIG_FILE))
 AUDIT_ACCOUNT := $(shell yq ".Parameters.AuditAccountID" ./$(CONFIG_FILE))
 PARAMETERS_STRING := jq -r '.Parameters[] | [ .ParameterKey, .ParameterValue ] | "\"\(.[0])\"=\"\(.[1])\""' ./build/params.json | tr "\n" " "
 ORGANIZATION_NAME := $(shell yq ".Parameters.OrganizationName" ./$(CONFIG_FILE))
-ORGANIZATION_ID := $(shell yq ".Parameters.OrganizationId" ./$(CONFIG_FILE))
+ORGANIZATION_ID := $(shell yq -r ".Parameters.OrganizationId" ./$(CONFIG_FILE))
 SS_PARAMS := ParameterKey="AuditAccountID",UsePreviousValue=true ParameterKey="OrganizationName",UsePreviousValue=true ParameterKey="RolePrefix",UsePreviousValue=true
 CLOUD_SHELL := $(shell echo $$(if [ "$$(whoami)" = "cloudshell-user" ]; then echo true; else echo false; fi))
 
