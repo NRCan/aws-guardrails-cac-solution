@@ -1308,6 +1308,8 @@ Resources:
           - Sid: AllowCreateLogGroup
             Action:
               - "logs:CreateLogGroup"
+              - "logs:DescribeLogGroups"
+              - "logs:DescribeMetricFilters"
             Resource:
               - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*"
             Effect: Allow
@@ -1346,6 +1348,7 @@ Resources:
               - "iam:ListAttachedGroupPolicies"
               - "iam:ListGroupPolicies"
               - "iam:GetPolicyVersion"
+              - "identitystore:ListGroupMemberships"
             Resource: "*"
             Effect: Allow
           - Sid: AllowCloudWatchAlarmQueries
@@ -1685,6 +1688,15 @@ Resources:
         - ParameterName: S3CasCurrentlyInUsePath
           ParameterValue: !Sub
             - "s3://${ClientEvidenceBucket}/gc-07/cas_currently_in_use.txt"
+            - ClientEvidenceBucket:
+                !If [
+                  GenerateEvidenceBucketName,
+                  !GetAtt GenerateEvidenceBucketName.EvidenceBucketName,
+                  !Ref EvidenceBucketName,
+                ]
+        - ParameterName: S3NonComplianceOptoutFilePath
+          ParameterValue: !Sub
+            - "s3://${ClientEvidenceBucket}/gc-07/GR07_lb_attestation.pdf"
             - ClientEvidenceBucket:
                 !If [
                   GenerateEvidenceBucketName,
